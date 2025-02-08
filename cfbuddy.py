@@ -76,9 +76,16 @@ try:
     repo.git.commit('-m', 'Update accepted solutions')
 except Exception as e:
     print(f"Nothing to commit: {e}")
+    exit(0)
 
 # Push to GitHub
 origin = repo.remote(name='origin')
-origin.push()
+
+# Set upstream branch if not already set
+try:
+    origin.push(set_upstream=True)
+except Exception as e:
+    print(f"Failed to push to GitHub: {e}")
+    exit(1)
 
 print("Changes have been pushed to GitHub.")
