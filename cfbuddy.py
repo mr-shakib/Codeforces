@@ -36,7 +36,12 @@ for sub in accepted_submissions:
     contest_id = sub['problem']['contestId']
     problem_level = sub['problem']['index']
     solution_code = sub['programmingLanguage']
-    solution_content = sub.get('source', '')  # Assuming the source code is available
+    solution_content = sub.get('source', '')  # Get the source code
+
+    # Skip if source code is not available
+    if not solution_content:
+        print(f"Skipping submission for problem {contest_id}{problem_level}: Source code not available.")
+        continue
 
     # Create the directory for the contest
     contest_dir = os.path.join(base_dir, str(contest_id))
@@ -45,8 +50,10 @@ for sub in accepted_submissions:
     # Save the solution file
     file_name = f"{problem_level}.{solution_code.lower()}"
     file_path = os.path.join(contest_dir, file_name)
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(solution_content)
+
+    print(f"Saved solution for problem {contest_id}{problem_level} to {file_path}.")
 
 print("Solutions have been organized into the directory structure.")
 
@@ -56,11 +63,19 @@ repo_path = os.getcwd()
 # Initialize the repository object
 repo = Repo(repo_path)
 
+# Check if the remote 'origin' exists
+if 'origin' not in [remote.name for remote in repo.remotes]:
+    print("Remote 'origin' is missing. Adding it now...")
+    repo.create_remote('origin', url='git@github.com:mr-shakib/Codeforces.git')
+
 # Add all changes
 repo.git.add('--all')
 
 # Commit the changes
-repo.git.commit('-m', 'Update accepted solutions')
+try:
+    repo.git.commit('-m', 'Update accepted solutions')
+except Exception as e:
+    print(f"Nothing to commit: {e}")
 
 # Push to GitHub
 origin = repo.remote(name='origin')
